@@ -1,0 +1,23 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+// builds a gradle wrapper
+// http://www.gradle.org/docs/current/userguide/gradle_wrapper.html
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.4'
+}
+
+mainClassName = "org.mdpnp.helloice.HelloICE"
+
+dependencies {
+    compile 'org.mdpnp:x73-idl-rti-dds:0.4.2'
+    compile 'org.slf4j:slf4j-api:1.7.5'
+    runtime 'org.slf4j:slf4j-log4j12:1.7.5'
+    runtime 'log4j:log4j:1.2.17'
+}
+
+repositories {
+  maven { url 'http://build.openice.info/artifactory/libs-snapshot' }
+  maven { url 'http://build.openice.info/artifactory/libs-release' }
+  mavenCentral()
+}
