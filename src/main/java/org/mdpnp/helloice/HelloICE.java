@@ -69,26 +69,32 @@ public class HelloICE {
 
             @Override
             public void on_liveliness_changed(DataReader arg0, LivelinessChangedStatus arg1) {
+                System.out.println("liveliness_changed "+arg1);
             }
 
             @Override
             public void on_requested_deadline_missed(DataReader arg0, RequestedDeadlineMissedStatus arg1) {
+                System.out.println("requested_deadline_missed "+arg1);
             }
 
             @Override
             public void on_requested_incompatible_qos(DataReader arg0, RequestedIncompatibleQosStatus arg1) {
+                System.out.println("requested_incompatible_qos "+arg1);
             }
 
             @Override
             public void on_sample_lost(DataReader arg0, SampleLostStatus arg1) {
+                System.out.println("sample_lost "+arg1);
             }
 
             @Override
             public void on_sample_rejected(DataReader arg0, SampleRejectedStatus arg1) {
+                System.out.println("sample_rejected "+arg1);
             }
 
             @Override
             public void on_subscription_matched(DataReader arg0, SubscriptionMatchedStatus arg1) {
+                System.out.println("subscription_matched "+arg1);
             }
             
         };
@@ -137,33 +143,39 @@ public class HelloICE {
             
             @Override
             public void on_liveliness_changed(DataReader arg0, LivelinessChangedStatus arg1) {
+                System.out.println("liveliness_changed "+arg1);
             }
 
             @Override
             public void on_requested_deadline_missed(DataReader arg0, RequestedDeadlineMissedStatus arg1) {
+                System.out.println("requested_deadline_missed "+arg1);
             }
 
             @Override
             public void on_requested_incompatible_qos(DataReader arg0, RequestedIncompatibleQosStatus arg1) {
+                System.out.println("requested_incompatible_qos "+arg1);
             }
 
             @Override
             public void on_sample_lost(DataReader arg0, SampleLostStatus arg1) {
+                System.out.println("sample_lost "+arg1);
             }
 
             @Override
             public void on_sample_rejected(DataReader arg0, SampleRejectedStatus arg1) {
+                System.out.println("sample_rejected "+arg1);
             }
 
             @Override
             public void on_subscription_matched(DataReader arg0, SubscriptionMatchedStatus arg1) {
+                System.out.println("subscription_matched "+arg1);
             }
         };
         
         // Create a reader endpoint for samplearray data
-        ice.SampleArrayDataReader saReader = (ice.SampleArrayDataReader) participant.create_datareader_with_profile(sampleArrayTopic, QosProfiles.ice_library, QosProfiles.waveform_data, saListener, StatusKind.DATA_AVAILABLE_STATUS);
+        ice.SampleArrayDataReader saReader = (ice.SampleArrayDataReader) participant.create_datareader_with_profile(sampleArrayTopic, QosProfiles.ice_library, QosProfiles.waveform_data, saListener, StatusKind.STATUS_MASK_ALL);
 
-        ice.NumericDataReader nReader = (ice.NumericDataReader) participant.create_datareader_with_profile(numericTopic, QosProfiles.ice_library, QosProfiles.numeric_data, nListener, StatusKind.DATA_AVAILABLE_STATUS);
+        ice.NumericDataReader nReader = (ice.NumericDataReader) participant.create_datareader_with_profile(numericTopic, QosProfiles.ice_library, QosProfiles.numeric_data, nListener, StatusKind.STATUS_MASK_ALL);
 
     }
 
