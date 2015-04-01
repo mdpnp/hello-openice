@@ -200,8 +200,6 @@
       <nanosec>2147483647</nanosec>
      </lease_duration>
     </liveliness>
-    <!-- Don't request this in all cases <destination_order> <kind>DDS_BY_SOURCE_TIMESTAMP_DESTINATIONORDER_QOS</kind> 
-     </destination_order> -->
     <durability>
      <!-- Writer is responsible for maintaining transient copies of samples 
       ... see history -->
@@ -277,10 +275,8 @@
      </lease_duration>
     </liveliness>
 
-    <!-- It is important to offer this QoS even if every Reader does not 
-     request it -->
     <destination_order>
-     <kind>DDS_BY_SOURCE_TIMESTAMP_DESTINATIONORDER_QOS</kind>
+     <kind>DDS_BY_RECEPTION_TIMESTAMP_DESTINATIONORDER_QOS</kind>
     </destination_order>
     <durability>
      <!-- Writer is responsible for maintaining transient copies of samples 
@@ -411,10 +407,8 @@
       <nanosec>0</nanosec>
      </lease_duration>
     </liveliness>
-    <!-- After a state transition we would like eventual consistency If samples 
-     are not delivered in order this is impossible -->
     <destination_order>
-     <kind>DDS_BY_SOURCE_TIMESTAMP_DESTINATIONORDER_QOS</kind>
+     <kind>DDS_BY_RECEPTION_TIMESTAMP_DESTINATIONORDER_QOS</kind>
     </destination_order>
     <durability>
      <!-- Writer is responsible for maintaining transient copies of samples 
@@ -466,10 +460,8 @@
   <qos_profile name="observed_data" base_name="default_profile"
    is_default_qos="false">
    <datareader_qos>
-    <!-- Ask DDS to sort samples for ease-of-programming. Depending on the 
-     reader is might want to deal with time ordering itself and disable this feature -->
     <destination_order>
-     <kind>DDS_BY_SOURCE_TIMESTAMP_DESTINATIONORDER_QOS</kind>
+     <kind>DDS_BY_RECEPTION_TIMESTAMP_DESTINATIONORDER_QOS</kind>
     </destination_order>
     <reliability>
      <kind>DDS_RELIABLE_RELIABILITY_QOS</kind>
@@ -521,7 +513,6 @@
     </lifespan>
     <!-- Reliability is offered by default -->
     <!-- Liveliness lease of 1 second is offered by default -->
-    <!-- Destination ordering BY_SOURCE is offered by default -->
     <!-- Durability offered is TRANSIENT_LOCAL by default; change here for 
      persistence of numerics? -->
     <!-- Ownership is exclusive by default -->

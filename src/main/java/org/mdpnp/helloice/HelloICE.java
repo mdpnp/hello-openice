@@ -173,8 +173,10 @@ public class HelloICE {
         };
         
         // Create a reader endpoint for samplearray data
+        @SuppressWarnings("unused")
         ice.SampleArrayDataReader saReader = (ice.SampleArrayDataReader) participant.create_datareader_with_profile(sampleArrayTopic, QosProfiles.ice_library, QosProfiles.waveform_data, saListener, StatusKind.STATUS_MASK_ALL);
 
+        @SuppressWarnings("unused")
         ice.NumericDataReader nReader = (ice.NumericDataReader) participant.create_datareader_with_profile(numericTopic, QosProfiles.ice_library, QosProfiles.numeric_data, nListener, StatusKind.STATUS_MASK_ALL);
 
     }
