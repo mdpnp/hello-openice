@@ -17,7 +17,7 @@ Please ensure that the version of the distribution matches the version reference
 configuration.  If you have questions you can reach the team at [community.openice.info](http://community.openice.info).
 
 ```sh
-git clone https://www.github.com/jeffplourde/hello-openice
+git clone https://www.github.com/mdpnp/hello-openice
 cd hello-openice
 ./gradlew run
 ```
