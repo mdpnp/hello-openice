@@ -2,6 +2,7 @@ package org.mdpnp.helloice;
 
 import ice.NumericDataReader;
 import ice.SampleArrayDataReader;
+import ice.Time_t;
 
 import org.mdpnp.rtiapi.data.QosProfiles;
 
@@ -9,6 +10,7 @@ import com.rti.dds.domain.DomainParticipant;
 import com.rti.dds.domain.DomainParticipantFactory;
 import com.rti.dds.infrastructure.ConditionSeq;
 import com.rti.dds.infrastructure.Duration_t;
+import com.rti.dds.infrastructure.InstanceHandle_t;
 import com.rti.dds.infrastructure.RETCODE_NO_DATA;
 import com.rti.dds.infrastructure.ResourceLimitsQosPolicy;
 import com.rti.dds.infrastructure.StatusKind;
@@ -291,12 +293,81 @@ public class HelloICE {
     }
     
     
+    public static void sendOnThisThread(DomainParticipant participant, Topic sampleArrayTopic, Topic numericTopic) throws InterruptedException {
+        // Creates a data writer; uses the default implicit publisher for this participant
+        ice.SampleArrayDataWriter saWriter = (ice.SampleArrayDataWriter) participant.create_datawriter_with_profile(sampleArrayTopic, QosProfiles.ice_library, QosProfiles.waveform_data, null, StatusKind.STATUS_MASK_NONE);
+
+        ice.NumericDataWriter nWriter = (ice.NumericDataWriter) participant.create_datawriter_with_profile(numericTopic, QosProfiles.ice_library, QosProfiles.numeric_data, null, StatusKind.STATUS_MASK_NONE);
+        
+        // Populate the values of a sample to be written later
+        ice.Numeric numeric = new ice.Numeric();
+        numeric.unique_device_identifier = "1111";
+        numeric.metric_id = rosetta.MDC_ECG_HEART_RATE.VALUE;
+        numeric.unit_id = rosetta.MDC_DIM_BEAT_PER_MIN.VALUE;
+        numeric.vendor_metric_id = "";
+        numeric.instance_id = 0;
+        numeric.device_time = new Time_t();
+        numeric.presentation_time = new Time_t();
+        
+        ice.SampleArray sampleArray = new ice.SampleArray();
+        sampleArray.unique_device_identifier = "1111";
+        sampleArray.metric_id = ice.MDC_ECG_LEAD_I.VALUE;
+        sampleArray.unit_id = rosetta.MDC_DIM_MILLI_VOLT.VALUE;
+        sampleArray.vendor_metric_id = "";
+        sampleArray.instance_id = 0;
+        sampleArray.device_time = new Time_t();
+        sampleArray.presentation_time = new Time_t();
+        sampleArray.frequency = 10;
+        
+        // Preregistering instances speeds up subsequent writes 
+        InstanceHandle_t saHandle = saWriter.register_instance(sampleArray);
+        InstanceHandle_t nHandle = nWriter.register_instance(numeric);
+        
+        // Write 
+        for(int i = 0; i < 10; i++) {
+            long time = System.currentTimeMillis();
+            
+            numeric.device_time.sec = (int) (time / 1000L);
+            numeric.device_time.nanosec = (int) (time % 1000L * 1000000L);
+            numeric.presentation_time.copy_from(numeric.device_time);
+            nWriter.write(numeric, nHandle);
+            
+            sampleArray.values.clear();
+            
+            sampleArray.device_time.copy_from(numeric.device_time);
+            sampleArray.presentation_time.copy_from(numeric.presentation_time);
+            
+            // Square wave
+            if(0 == (i%2)) {
+                for(int j = 0; j < 10; j++) {
+                    sampleArray.values.userData.add(0.0f);
+                }
+            } else {
+                for(int j = 0; j < 10; j++) {
+                    sampleArray.values.userData.add(1.0f);
+                }
+                
+            }
+            saWriter.write(sampleArray, saHandle);
+            
+            System.out.println("Wrote " + numeric);
+            System.out.println(sampleArray);
+            
+            Thread.sleep(1000L);
+        }
+        
+        saWriter.unregister_instance(sampleArray, saHandle);
+        nWriter.unregister_instance(numeric, nHandle);
+        
+    }
+    
     enum ReceiveStrategy {
         OnMyThreadByConditionVar,
         OnMiddlewareThread,
+        PublishExample,
     }
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         int domainId = 0;
 
         // domainId is the one command line argument
@@ -324,6 +395,10 @@ public class HelloICE {
 
         ReceiveStrategy strategy = ReceiveStrategy.OnMiddlewareThread;
         
+        if(args.length > 1) { 
+            strategy = ReceiveStrategy.valueOf(args[1]);
+        }
+        
         switch(strategy) {
         // receiveOnMyThreadByConditionVar demonstrates receiving data on *this* thread via notification by condition variable.
         // Alternatively in unique cases readers can be polled at intervals with no signalling.
@@ -333,6 +408,9 @@ public class HelloICE {
         // receiveOnMiddlewareThread demonstrates receiving data via a callback on a middleware thread.
         case OnMiddlewareThread:
             receiveOnMiddlewareThread(participant, sampleArrayTopic, numericTopic);
+            break;
+        case PublishExample:
+            sendOnThisThread(participant, sampleArrayTopic, numericTopic);
             break;
         }
         
