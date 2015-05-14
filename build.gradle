@@ -14,7 +14,7 @@ targetCompatibility = '1.8'
 mainClassName = "org.mdpnp.helloice.HelloICE"
 
 dependencies {
-    compile 'org.mdpnp:x73-idl-rti-dds:0.6.0' //includes all the openIce components
+    compile 'org.mdpnp:x73-idl-rti-dds:0.6.2' //includes all the openIce components
     
     compile 'org.slf4j:slf4j-api:1.7.10'
     runtime 'org.slf4j:slf4j-log4j12:1.7.10'

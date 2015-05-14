@@ -12,7 +12,7 @@ Build And Run
 --------------
 
 You can provide simulated data to this receiver program by downloading and running our
-distribution of OpenICE 'demo-apps' from our [SourceForge Project](https://sourceforge.net/projects/mdpnp/files/Interoperability%20Lab/).
+distribution of OpenICE from our [SourceForge Project](https://sourceforge.net/projects/mdpnp/files/Interoperability%20Lab/).
 Please ensure that the version of the distribution matches the version referenced in this project's build.gradle
 configuration.  If you have questions you can reach the team at [community.openice.info](http://community.openice.info).
 
