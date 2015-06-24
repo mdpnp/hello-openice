@@ -5,6 +5,7 @@ import ice.SampleArrayDataReader;
 import ice.Time_t;
 
 import org.mdpnp.rtiapi.data.QosProfiles;
+import org.mdpnp.rtiapi.qos.IceQos;
 
 import com.rti.dds.domain.DomainParticipant;
 import com.rti.dds.domain.DomainParticipantFactory;
@@ -375,8 +376,8 @@ public class HelloICE {
             domainId = Integer.parseInt(args[0]);
         }
 
-        // Here we use 'default' Quality of Service settings where QoS settings are configured via the USER_QOS_PROFILES.xml
-        // in the current working directory
+        // Here we use 'default' Quality of Service settings supplied by x73-idl-rti-dds
+        IceQos.loadAndSetIceQos();
 
         // A domain participant is the main access point into the DDS domain.  Endpoints are created within the domain participant
         DomainParticipant participant = DomainParticipantFactory.get_instance().create_participant(domainId, DomainParticipantFactory.PARTICIPANT_QOS_DEFAULT, null, StatusKind.STATUS_MASK_NONE);
