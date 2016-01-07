@@ -1,5 +1,9 @@
 package org.mdpnp.helloice;
 
+import com.rti.dds.domain.DomainParticipantQos;
+import com.rti.dds.publication.Publisher;
+import com.rti.dds.publication.PublisherQos;
+import com.rti.dds.subscription.*;
 import ice.NumericDataReader;
 import ice.SampleArrayDataReader;
 import ice.Time_t;
@@ -16,19 +20,6 @@ import com.rti.dds.infrastructure.RETCODE_NO_DATA;
 import com.rti.dds.infrastructure.ResourceLimitsQosPolicy;
 import com.rti.dds.infrastructure.StatusKind;
 import com.rti.dds.infrastructure.WaitSet;
-import com.rti.dds.subscription.DataReader;
-import com.rti.dds.subscription.DataReaderListener;
-import com.rti.dds.subscription.InstanceStateKind;
-import com.rti.dds.subscription.LivelinessChangedStatus;
-import com.rti.dds.subscription.RequestedDeadlineMissedStatus;
-import com.rti.dds.subscription.RequestedIncompatibleQosStatus;
-import com.rti.dds.subscription.SampleInfo;
-import com.rti.dds.subscription.SampleInfoSeq;
-import com.rti.dds.subscription.SampleLostStatus;
-import com.rti.dds.subscription.SampleRejectedStatus;
-import com.rti.dds.subscription.SampleStateKind;
-import com.rti.dds.subscription.SubscriptionMatchedStatus;
-import com.rti.dds.subscription.ViewStateKind;
 import com.rti.dds.topic.Topic;
 
 public class HelloICE {
@@ -373,6 +364,7 @@ public class HelloICE {
 
         // domainId is the one command line argument
         if(args.length > 0) {
+            System.out.println("Using Domain " + args[0]);
             domainId = Integer.parseInt(args[0]);
         }
 
@@ -381,6 +373,61 @@ public class HelloICE {
 
         // A domain participant is the main access point into the DDS domain.  Endpoints are created within the domain participant
         DomainParticipant participant = DomainParticipantFactory.get_instance().create_participant(domainId, DomainParticipantFactory.PARTICIPANT_QOS_DEFAULT, null, StatusKind.STATUS_MASK_NONE);
+
+
+
+        // OpenICE divides the global DDS data-space into individual patient contexts using the DDS partitioning mechanism.
+        // Partitions are a list of strings (and wildcards) that pubs and subs are required to match (at least one once) in their respective lists to pair.
+        // Partitions are assigned at the publisher/subscriber level in the quality of service (QoS) settings.
+
+        // Declare and instantiate a new SubscriberQos policy
+        SubscriberQos subscriberQos = new SubscriberQos();
+
+        // Populate the SubscriberQos policy
+        participant.get_default_subscriber_qos(subscriberQos);
+
+        subscriberQos.partition.name.clear();
+
+        // Add an entry to the partition list. 'name' is actually a DDS StringSeq that you can simply .add() to.
+        // To receive OpenICE data for a specific patient, add the patient's MRN to the QoS partition policy
+        // e.g. "MRN=12345". MRNs are alphanumeric prefixed with "MRN="
+        // subscriberQos.partition.name.add("MRN=10101");   // This is fake patient Randall Jones in the MDPnP lab.
+
+        // Partitioning supports some wildcards like "*" to access every partition (including the default or null partition)
+        subscriberQos.partition.name.add("*");
+
+        // A note about partition names:
+        // The Supervisor uses an MRN for the Partition name and a First / Last name as a display name. For example, MRN=10101
+        // will show up as Randall Jones in the Supervisor. To match display names and MRNs, the Supervisor will either
+        // use defaults or look them up in an HL7 FHIR database. If you provide an HL7 FHIR server address, the Supervisor
+        // will treat that server as a "Master Patient Index". The Supervisor will attempt to download the Patient Resource
+        // (https://www.hl7.org/fhir/patient.html) from that address and use resource.identifier.value as the Partition name and
+        // resource.name.family / resource.name.given as the display name. If no HL7 FHIR address is provided, the Supervisor will
+        // provide a small SQL server of default names and MRNs.
+
+        // Set the subscriber qos with our newly created SubscriberQos
+        participant.set_default_subscriber_qos(subscriberQos);
+
+        // There are a couple ways to do this (as far as I can tell). I don't know which one is correct or standard or proper or whatever. For example:
+        // Subscriber subscriber = participant.get_implicit_subscriber();
+        // subscriber.get_qos(subscriberQos);
+        // subscriberQos.partition.name.add("MRN=10101");
+        // subscriber.set_qos(subscriberQos);
+
+
+        // Same concept but this time for the publisher
+        PublisherQos publisherQos = new PublisherQos();
+
+        participant.get_default_publisher_qos(publisherQos);
+
+        publisherQos.partition.name.clear();
+
+        // Change this line to the patient MRN for which you want to emit data.
+//        publisherQos.partition.name.add("MRN=10101");
+
+        participant.set_default_publisher_qos(publisherQos);
+
+
 
         // Inform the participant about the sample array data type we would like to use in our endpoints
         ice.SampleArrayTypeSupport.register_type(participant, ice.SampleArrayTypeSupport.get_type_name());
@@ -396,10 +443,12 @@ public class HelloICE {
 
         ReceiveStrategy strategy = ReceiveStrategy.OnMiddlewareThread;
         
-        if(args.length > 1) { 
+        if(args.length > 1) {
             strategy = ReceiveStrategy.valueOf(args[1]);
         }
-        
+
+        System.out.println("strategy: " + strategy);
+
         switch(strategy) {
         // receiveOnMyThreadByConditionVar demonstrates receiving data on *this* thread via notification by condition variable.
         // Alternatively in unique cases readers can be polled at intervals with no signalling.
